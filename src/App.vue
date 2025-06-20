@@ -3,8 +3,13 @@
     <h1>Task Manager</h1>
     <TaskForm @addTask="handleAddTask" />
     <h3>There are {{ tasks.length }} tasks in the list</h3>
+    <div class="filter-btns">
+      <FilterButton filter="all" @filterTasks="handleFilterTasks" />
+      <FilterButton filter="active" @filterTasks="handleFilterTasks" />
+      <FilterButton filter="completed" @filterTasks="handleFilterTasks" />
+    </div>
     <TaskList
-      :tasks="tasks"
+      :tasks="filteredTasks"
       @toggleTask="handleToggleTask"
       @deleteTask="handleDeleteTask"
       @editTask="handleEditTask"
@@ -13,9 +18,13 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import TaskForm from "./components/TaskForm.vue";
 import TaskList from "./components/TaskList.vue";
+import FilterButton from "./components/FilterButton.vue";
+
+const filter = ref("all");
+
 function handleAddTask(task) {
   tasks.value.push({
     id: Date.now(),
@@ -24,6 +33,19 @@ function handleAddTask(task) {
   });
   console.log("Current tasks:", tasks.value);
 }
+
+const filteredTasks = computed(() => {
+  switch (filter.value) {
+    case "active":
+      return tasks.value.filter((task) => !task.done);
+    case "completed":
+      return tasks.value.filter((task) => task.done);
+    case "all":
+      return tasks.value;
+    default:
+      return tasks.value;
+  }
+});
 
 function handleToggleTask(id) {
   const task = tasks.value.find((task) => task.id === id);
@@ -46,6 +68,10 @@ function handleEditTask({ id, text }) {
   console.log("Current tasks after edit:", tasks.value);
 }
 
+function handleFilterTasks(newFilter) {
+  filter.value = newFilter;
+}
+
 const tasks = ref([]);
 </script>
 
@@ -56,5 +82,10 @@ main {
 }
 h1 {
   text-align: center;
+}
+.filter-btns {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 </style>
